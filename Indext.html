@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>White Box Testing - Logika Percabangan Diskon</title>
+  <style>
+    :root {
+      --bg-dark: #0B0F19;
+      --card-bg: #13192B;
+      --border-color: #252E4A;
+      --accent-purple: #8B5CF6;
+      --accent-blue: #3B82F6;
+      --neon-green: #10B981;
+      --danger-red: #EF4444;
+      --text-main: #F3F4F6;
+      --text-muted: #9CA3AF;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top left, #1E1B4B, var(--bg-dark) 60%);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      background: linear-gradient(90deg, var(--neon-green), var(--accent-blue), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.25fr 1fr;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 820px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+      color: var(--neon-green);
+    }
+
+    .code-block {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    .code-line {
+      display: flex;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      transition: background-color 0.2s, border-left 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .line-num {
+      color: var(--text-muted);
+      width: 2.2rem;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .code-line.executed {
+      background-color: rgba(16, 185, 129, 0.14);
+      border-left-color: var(--neon-green);
+    }
+
+    .code-line.active-branch {
+      background-color: rgba(139, 92, 246, 0.25);
+      border-left-color: var(--accent-purple);
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    input[type="number"] {
+      flex: 1;
+      min-width: 150px;
+      padding: 0.7rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--neon-green);
+    }
+
+    .btn {
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, opacity 0.2s;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-run {
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
+      color: #fff;
+    }
+
+    .btn-all {
+      background-color: var(--neon-green);
+      color: #064E3B;
+      width: 100%;
+      margin-bottom: 1rem;
+    }
+
+    .path-box {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .path-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #C4B5FD;
+      border: 1px solid var(--accent-purple);
+    }
+
+    .coverage-list {
+      list-style: none;
+      display: grid;
+      gap: 0.6rem;
+    }
+
+    .coverage-item {
+      background-color: var(--bg-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.86rem;
+    }
+
+    .status-tag {
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background-color: #374151;
+      color: #D1D5DB;
+    }
+
+    .status-tag.covered {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: var(--neon-green);
+      border: 1px solid var(--neon-green);
+    }
+
+    .student-info {
+      margin-top: 1.5rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>White Box Testing: Logika Percabangan Diskon</h1>
+      <p>Visualisasi Statement &amp; Branch Coverage — Tugas 2 STQA</p>
+    </header>
+
+    <div class="grid">
+      <!-- Panel Kode & Alur Eksekusi -->
+      <div class="card">
+        <h2>Source Code &amp; Trace Eksekusi</h2>
+        <div class="code-block" id="codeBlock"></div>
+      </div>
+
+      <!-- Panel Kontrol & Cakupan Cabang -->
+      <div class="card">
+        <h2>Kontrol Uji &amp; Branch Coverage</h2>
+        <div class="controls">
+          <input type="number" id="inputBelanja" placeholder="Input total belanja (misal: 500000)" />
+          <button class="btn btn-run" onclick="ujiSingle()">Trace</button>
+        </div>
+        <button class="btn btn-all" onclick="ujiSemuaJalur()">Uji Semua Jalur (Jalur 1, 2, &amp; 3)</button>
+
+        <div class="path-box" id="traceInfo">
+          <span class="path-badge">MENUNGGU EKSEKUSI</span>
+          <p style="color: var(--text-muted);">Masukkan nilai atau klik "Uji Semua Jalur" untuk melihat jalur percabangan yang dilewati.</p>
+        </div>
+
+        <ul class="coverage-list">
+          <li class="coverage-item">
+            <span><strong>Jalur 1:</strong> total_belanja &lt; 0 (True)</span>
+            <span class="status-tag" id="cov-1">BELUM</span>
+          </li>
+          <li class="coverage-item">
+            <span><strong>Jalur 2:</strong> total_belanja &gt;= 500.000 (True)</span>
+            <span class="status-tag" id="cov-2">BELUM</span>
+          </li>
+          <li class="coverage-item">
+            <span><strong>Jalur 3:</strong> 0 &lt;= total_belanja &lt; 500.000 (Else)</span>
+            <span class="status-tag" id="cov-3">BELUM</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="student-info">
+      Nama: <strong>Riyo Wahyu Saputra</strong> | NPM: <strong>2470111079</strong>
+    </div>
+  </div>
+
+  <script>
+    const lines = [
+      "function prosesDiskon(totalBelanja) {",
+      "  if (totalBelanja < 0) {",
+      '    return "Transaksi ditolak";',
+      "  } else if (totalBelanja >= 500000) {",
+      "    const diskon = totalBelanja * 0.10;",
+      "    const totalBayar = totalBelanja - diskon;",
+      "    return totalBayar;",
+      "  } else {",
+      "    return totalBelanja;",
+      "  }",
+      "}"
+    ];
+
+    const executedLines = new Set();
+
+    function renderCode(activeSet = new Set()) {
+      const block = document.getElementById("codeBlock");
+      block.innerHTML = "";
+      lines.forEach((text, idx) => {
+        const lineNum = idx + 1;
+        const div = document.createElement("div");
+        div.className = "code-line";
+        if (executedLines.has(lineNum)) div.classList.add("executed");
+        if (activeSet.has(lineNum)) div.classList.add("active-branch");
+        div.innerHTML = `<span class="line-num">${lineNum}</span><span>${text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`;
+        block.appendChild(div);
+      });
+    }
+
+    function tandaiJalur(jalurId) {
+      const el = document.getElementById(`cov-${jalurId}`);
+      el.textContent = "COVERED";
+      el.classList.add("covered");
+    }
+
+    function eksekusiWhiteBox(val) {
+      const traceInfo = document.getElementById("traceInfo");
+      if (isNaN(val)) {
+        traceInfo.innerHTML = `<span class="path-badge">INPUT TIDAK VALID</span><p>Harap masukkan angka yang valid.</p>`;
+        return;
+      }
+
+      let active = new Set([1, 2]);
+      let jalurId = null;
+      let keterangan = "";
+
+      if (val < 0) {
+        active.add(3);
+        jalurId = 1;
+        keterangan = `Input <strong>Rp${val.toLocaleString("id-ID")}</strong> memenuhi kondisi <code>totalBelanja &lt; 0</code>. Eksekusi masuk ke <strong>Jalur 1</strong> (baris 2–3) dan menolak transaksi.`;
+      } else if (val >= 500000) {
+        active.add(4);
+        active.add(5);
+        active.add(6);
+        active.add(7);
+        jalurId = 2;
+        const bayar = val - (val * 0.1);
+        keterangan = `Input <strong>Rp${val.toLocaleString("id-ID")}</strong> melewati baris 2 (False) dan memenuhi <code>totalBelanja &gt;= 500000</code>. Eksekusi masuk ke <strong>Jalur 2</strong> (baris 4–7), total bayar <strong>Rp${bayar.toLocaleString("id-ID")}</strong>.`;
+      } else {
+        active.add(4);
+        active.add(8);
+        active.add(9);
+        jalurId = 3;
+        keterangan = `Input <strong>Rp${val.toLocaleString("id-ID")}</strong> bernilai False pada baris 2 dan baris 4. Eksekusi masuk ke blok <strong>Else / Jalur 3</strong> (baris 8–9) tanpa diskon.`;
+      }
+
+      active.add(11);
+      active.forEach(l => executedLines.add(l));
+      tandaiJalur(jalurId);
+      renderCode(active);
+
+      traceInfo.innerHTML = `
+        <span class="path-badge">JALUR ${jalurId} AKTIF</span>
+        <p>${keterangan}</p>
+      `;
+    }
+
+    function ujiSingle() {
+      const val = parseFloat(document.getElementById("inputBelanja").value);
+      eksekusiWhiteBox(val);
+    }
+
+    function ujiSemuaJalur() {
+      const sampleInputs = [-25000, 500000, 250000];
+      sampleInputs.forEach((sample, i) => {
+        setTimeout(() => {
+          document.getElementById("inputBelanja").value = sample;
+          eksekusiWhiteBox(sample);
+        }, i * 500);
+      });
+    }
+
+    renderCode();
+  </script>
+</body>
+</html>
